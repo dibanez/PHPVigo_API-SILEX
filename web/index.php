@@ -20,7 +20,7 @@ $app->get('/hola/{name}', function($name) use ($app) {
     return 'Hola '.$app->escape($name);
 });
 
-$app->get('/usuarios/', function() use ($app) {
+$app->get('/usuarios', function() use ($app) {
     $sql = "select * from usuarios";
     $datos = $app['db']->fetchAll($sql);
     return new JsonResponse( $datos, 200 );
