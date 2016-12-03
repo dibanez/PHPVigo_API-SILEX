@@ -1,6 +1,9 @@
 {
     "require": {
         "silex/silex": "~2.0",
-        "doctrine/dbal": "~2.2"
+        "doctrine/dbal": "~2.2",
+        "symfony/security": "^2.7",
+        "firebase/php-jwt": "2.0.0",
+        "cnam/security-jwt-service-provider":"2.1.0"
     }
 }
