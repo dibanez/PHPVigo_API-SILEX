@@ -100,4 +100,19 @@ $app->post('/login', function(Request $request) use ($app) {
     }
 });
 
+$app->get('/list/usuarios', function(Request $request) use ($app) {
+      //$id_token = $app['security.token_storage']->getToken();
+      //$app['token'] = $app['security.jwt.encoder']->decode($id_token->credentials);
+
+      if ($app['security.authorization_checker']->isGranted('ROLE_ADMIN')) {
+          $sql = "select * from usuarios";
+          $datos = $app['db']->fetchAll($sql);
+          return new JsonResponse( $datos, 200 );
+      } else {
+          return new JsonResponse( array('mensaje' => 'no tienes acceso'), 401 );
+      }
+
+});
+
+
 $app->run();
