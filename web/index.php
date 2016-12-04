@@ -100,7 +100,7 @@ $app->post('/login', function(Request $request) use ($app) {
     }
 });
 
-$app->get('/list/usuarios', function(Request $request) use ($app) {
+$app->get('/list/users', function(Request $request) use ($app) {
       //$id_token = $app['security.token_storage']->getToken();
       //$app['token'] = $app['security.jwt.encoder']->decode($id_token->credentials);
 
@@ -114,5 +114,22 @@ $app->get('/list/usuarios', function(Request $request) use ($app) {
 
 });
 
+
+$app->post('/add/user', function(Request $request) use ($app) {
+      //$id_token = $app['security.token_storage']->getToken();
+      //$app['token'] = $app['security.jwt.encoder']->decode($id_token->credentials);
+      $nombre = addslashes(substr($request->get('name'), 0, 50));
+      $usuario = addslashes(substr($request->get('user'), 0, 50));
+      $password = addslashes(substr($request->get('pass'), 0, 50));
+      $tipo = addslashes(substr($request->get('tipo'), 0, 50));
+      if ($app['security.authorization_checker']->isGranted('ROLE_ADMIN')) {
+          $sqladduser = "INSERT INTO usuarios (nombre, usuario, password, tipo) VALUES (?,?,?,?);";
+          $app['db']->executeUpdate($sqladduser, [$nombre, $usuario, $password, $tipo]);
+          return new JsonResponse( array('mensaje' => 'usuario agregado'), 200 );
+      } else {
+          return new JsonResponse( array('mensaje' => 'no tienes acceso'), 401 );
+      }
+
+});
 
 $app->run();
