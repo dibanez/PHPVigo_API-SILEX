@@ -100,12 +100,12 @@ $app->post('/login', function(Request $request) use ($app) {
     }
 });
 
-$app->get('/list/users', function(Request $request) use ($app) {
+$app->get('/users', function(Request $request) use ($app) {
       //$id_token = $app['security.token_storage']->getToken();
       //$app['token'] = $app['security.jwt.encoder']->decode($id_token->credentials);
 
       if ($app['security.authorization_checker']->isGranted('ROLE_ADMIN')) {
-          $sql = "select * from usuarios";
+          $sql = "SELECT * FROM usuarios;";
           $datos = $app['db']->fetchAll($sql);
           return new JsonResponse( $datos, 200 );
       } else {
@@ -114,8 +114,28 @@ $app->get('/list/users', function(Request $request) use ($app) {
 
 });
 
+$app->get('/users/{id}', function(Request $request, $id) use ($app) {
+      $sql = "SELECT * FROM usuarios WHERE id=?;";
+      $datos = $app['db']->fetchAssoc($sql, [$id]);
 
-$app->post('/add/user', function(Request $request) use ($app) {
+      if ($app['security.authorization_checker']->isGranted('ROLE_ADMIN')) {
+          if ($datos) {
+            return new JsonResponse( $datos, 200 );
+          } else {
+            return new JsonResponse( array('mensaje' => 'Usuario no existe'), 401 );
+          }
+      } else {
+          $id_token = $app['security.token_storage']->getToken();
+          $app['token'] = $app['security.jwt.encoder']->decode($id_token->credentials);
+          if($app['token']->id == $datos['id']) {
+            return new JsonResponse( $datos, 200 );
+          } else {
+            return new JsonResponse( array('mensaje' => 'no tienes acceso'), 401 );
+          }
+      }
+});
+
+$app->post('/users', function(Request $request) use ($app) {
       //$id_token = $app['security.token_storage']->getToken();
       //$app['token'] = $app['security.jwt.encoder']->decode($id_token->credentials);
       $nombre = addslashes(substr($request->get('name'), 0, 50));
@@ -131,5 +151,6 @@ $app->post('/add/user', function(Request $request) use ($app) {
       }
 
 });
+
 
 $app->run();
