@@ -8,7 +8,7 @@ use Silex\Provider\SecurityJWTServiceProvider;
 
 $app = new Silex\Application();
 
-$app['debug'] = true;
+$app['debug'] = false;
 
 $app['driver'] = 'pdo_sqlite';
 $app['path'] = __DIR__.'/../db/datos.db';
@@ -69,6 +69,20 @@ $app->register(new DoctrineServiceProvider(), [
         'path' => $app['path']
     ],
 ]);
+
+$app->error(function (\Exception $e, $code) use ($app) {
+    if ($app['debug']) {
+      return new JsonResponse(
+          array(
+              'statusCode' => $code,
+              'message' => $e->getMessage(),
+              'stacktrace' => $e->getTraceAsString(),
+          )
+      );
+    } else {
+      return new JsonResponse( array('mensaje' => 'Acceso restringido'), 401 );
+    }
+});
 
 $app->get('/hola/{name}', function($name) use ($app) {
     return 'Hola '.$app->escape($name);
@@ -133,7 +147,7 @@ $app->get('/users/{id}', function(Request $request, $id) use ($app) {
             return new JsonResponse( array('mensaje' => 'no tienes acceso'), 401 );
           }
       }
-});
+})->assert('id', '\d+');
 
 $app->post('/users', function(Request $request) use ($app) {
       //$id_token = $app['security.token_storage']->getToken();
@@ -160,7 +174,7 @@ $app->put('/users/{id}', function(Request $request, $id) use ($app) {
     } else {
         return new JsonResponse( array('mensaje' => 'no tienes acceso'), 401 );
     }
-});
+})->assert('id', '\d+');
 
 $app->delete('/users/{id}', function(Request $request, $id) use ($app) {
     if ($app['security.authorization_checker']->isGranted('ROLE_ADMIN')) {
@@ -169,7 +183,7 @@ $app->delete('/users/{id}', function(Request $request, $id) use ($app) {
     } else {
         return new JsonResponse( array('mensaje' => 'no tienes acceso'), 401 );
     }
-});
+})->assert('id', '\d+');
 
 
 $app->run();
