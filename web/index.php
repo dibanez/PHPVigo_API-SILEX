@@ -152,6 +152,16 @@ $app->post('/users', function(Request $request) use ($app) {
 
 });
 
+$app->put('/users/{id}', function(Request $request, $id) use ($app) {
+    if ($app['security.authorization_checker']->isGranted('ROLE_ADMIN')) {
+        $datos = array_map( 'addslashes', $request->request->all() );
+        $app['db']->update('usuarios', $datos, array('id' => $id));
+        return new JsonResponse( array('mensaje' => 'usuario actualizado'), 200 );
+    } else {
+        return new JsonResponse( array('mensaje' => 'no tienes acceso'), 401 );
+    }
+});
+
 $app->delete('/users/{id}', function(Request $request, $id) use ($app) {
     if ($app['security.authorization_checker']->isGranted('ROLE_ADMIN')) {
         $app['db']->delete('usuarios', array('id' => $id));
