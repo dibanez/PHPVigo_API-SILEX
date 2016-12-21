@@ -75,6 +75,10 @@ $app->before(function (Request $request) {
   header('Access-Control-Allow-Methods: GET, POST, OPTIONS, PUT, PATCH, DELETE');
   header("Access-Control-Allow-Headers: X-Access-Token, Origin, Content-Type, Accept, Acces-Control-Request-Method");
   header("Allow: GET, POST, OPTIONS, PUT, PATCH, DELETE");
+  if (0 === strpos($request->headers->get('Content-Type'), 'application/json')) {
+    $data = json_decode($request->getContent(), true);
+    $request->request->replace(is_array($data) ? $data : array());
+  }
 });
 
 $app->error(function (\Exception $e, $code) use ($app) {
