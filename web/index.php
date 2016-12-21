@@ -159,14 +159,14 @@ $app->post('/users', function(Request $request) use ($app) {
       if ($app['security.authorization_checker']->isGranted('ROLE_ADMIN')) {
           $sqladduser = "INSERT INTO usuarios (nombre, usuario, password, tipo) VALUES (?,?,?,?);";
           $app['db']->executeUpdate($sqladduser, [$nombre, $usuario, $password, $tipo]);
-          return new JsonResponse( array('mensaje' => 'usuario agregado'), 200 );
+          return new JsonResponse( array('mensaje' => 'usuario agregado'), 201 );
       } else {
           return new JsonResponse( array('mensaje' => 'no tienes acceso'), 401 );
       }
 
 });
 
-$app->put('/users/{id}', function(Request $request, $id) use ($app) {
+$app->match('/users/{id}', function(Request $request, $id) use ($app) {
     if ($app['security.authorization_checker']->isGranted('ROLE_ADMIN')) {
         $datos = array_map( 'addslashes', $request->request->all() );
         $app['db']->update('usuarios', $datos, array('id' => $id));
@@ -174,7 +174,9 @@ $app->put('/users/{id}', function(Request $request, $id) use ($app) {
     } else {
         return new JsonResponse( array('mensaje' => 'no tienes acceso'), 401 );
     }
-})->assert('id', '\d+');
+})
+->assert('id', '\d+')
+->method('PUT|PATCH');
 
 $app->delete('/users/{id}', function(Request $request, $id) use ($app) {
     if ($app['security.authorization_checker']->isGranted('ROLE_ADMIN')) {
