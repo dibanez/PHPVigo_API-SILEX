@@ -70,6 +70,13 @@ $app->register(new DoctrineServiceProvider(), [
     ],
 ]);
 
+$app->before(function (Request $request) {
+  header('Access-Control-Allow-Origin: *');
+  header('Access-Control-Allow-Methods: GET, POST, OPTIONS, PUT, PATCH, DELETE');
+  header("Access-Control-Allow-Headers: X-Access-Token, Origin, Content-Type, Accept, Acces-Control-Request-Method");
+  header("Allow: GET, POST, OPTIONS, PUT, PATCH, DELETE");
+});
+
 $app->error(function (\Exception $e, $code) use ($app) {
     if ($app['debug']) {
       return new JsonResponse(
@@ -166,17 +173,22 @@ $app->post('/users', function(Request $request) use ($app) {
 
 });
 
+$before = function (Request $request) use ($app) {
+    $app['before'] = "antes";
+};
+
 $app->match('/users/{id}', function(Request $request, $id) use ($app) {
     if ($app['security.authorization_checker']->isGranted('ROLE_ADMIN')) {
         $datos = array_map( 'addslashes', $request->request->all() );
         $app['db']->update('usuarios', $datos, array('id' => $id));
-        return new JsonResponse( array('mensaje' => 'usuario actualizado'), 200 );
+        return new JsonResponse( array('mensaje' => 'usuario actualizado - '.$app['before']), 200 );
     } else {
         return new JsonResponse( array('mensaje' => 'no tienes acceso'), 401 );
     }
 })
 ->assert('id', '\d+')
-->method('PUT|PATCH');
+->method('PUT|PATCH')
+->before($before);
 
 $app->delete('/users/{id}', function(Request $request, $id) use ($app) {
     if ($app['security.authorization_checker']->isGranted('ROLE_ADMIN')) {
